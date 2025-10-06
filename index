@@ -1,796 +1,447 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="Generador de tarjetas ULTRA - Crea y comparte mensajes inspiradores con versículos bíblicos" />
-  <meta name="theme-color" content="#6a11cb" />
-  <title>Tarjeta ULTRA — Seguir al Señor</title>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg1: #6a11cb;
-      --bg2: #2575fc;
-      --accent: #fff;
-      --card-bg: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-      --text-primary: rgba(255,255,255,0.95);
-      --text-secondary: rgba(255,255,255,0.8);
-      --border-color: rgba(255,255,255,0.06);
-      --shadow: 0 10px 30px rgba(0,0,0,0.25);
-    }
-    
-    * { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; font-family: Montserrat, system-ui, Segoe UI, Roboto, Arial; }
-    body { 
-      background: linear-gradient(135deg, var(--bg1), var(--bg2)); 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      padding: 24px; 
-      color: var(--accent);
-      line-height: 1.5;
-    }
-    
-    .app { 
-      width: 980px; 
-      max-width: 100%; 
-      display: grid; 
-      grid-template-columns: 420px 1fr; 
-      gap: 24px;
-    }
-    
-    .panel { 
-      background: var(--card-bg); 
-      border-radius: 16px; 
-      padding: 24px; 
-      box-shadow: var(--shadow); 
-      border: 1px solid var(--border-color);
-      backdrop-filter: blur(10px);
-    }
-    
-    h1 { font-size: 20px; margin: 0 0 12px; font-weight: 700; }
-    .small { font-size: 13px; color: var(--text-secondary); }
-    
-    label { 
-      display: block; 
-      font-size: 14px; 
-      color: var(--text-secondary); 
-      margin-top: 16px;
-      font-weight: 600;
-    }
-    
-    input[type="text"], textarea, select {
-      width: 100%; 
-      padding: 12px; 
-      border-radius: 12px; 
-      border: 0; 
-      background: rgba(255,255,255,0.05); 
-      color: inherit; 
-      font-size: 14px; 
-      outline: 1px solid var(--border-color);
-      transition: all 0.2s ease;
-      font-family: inherit;
-    }
-    
-    input[type="text"]:focus, textarea:focus, select:focus {
-      outline: 2px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.08);
-    }
-    
-    textarea { 
-      min-height: 100px; 
-      resize: vertical; 
-    }
-    
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 10px 16px; 
-      border-radius: 12px; 
-      background: rgba(255,255,255,0.95); 
-      color: #0b1220; 
-      text-decoration: none; 
-      font-weight: 700; 
-      margin-right: 8px; 
-      border: none; 
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 13px;
-    }
-    
-    .btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    
-    .btn.ghost { 
-      background: transparent; 
-      border: 1px solid rgba(255,255,255,0.12); 
-      color: var(--accent);
-    }
-    
-    .btn.ghost:hover {
-      background: rgba(255,255,255,0.1);
-    }
-    
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-    
-    .row { 
-      display: flex; 
-      gap: 8px; 
-      margin-top: 8px;
-    }
-    
-    .verses-list { 
-      margin-top: 12px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-    
-    .verse-item { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      padding: 10px 12px; 
-      border-radius: 10px; 
-      margin-bottom: 8px; 
-      background: rgba(255,255,255,0.03);
-      transition: background 0.2s ease;
-    }
-    
-    .verse-item:hover {
-      background: rgba(255,255,255,0.05);
-    }
-    
-    .preview-wrap { 
-      display: flex; 
-      align-items: center; 
-      justify-content: center;
-    }
-    
-    .card-preview { 
-      width: 100%; 
-      height: 520px; 
-      border-radius: 20px; 
-      padding: 32px; 
-      box-sizing: border-box; 
-      background: var(--card-bg); 
-      position: relative; 
-      border: 1px solid var(--border-color); 
-      overflow: hidden; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: space-between;
-      box-shadow: var(--shadow);
-    }
-    
-    .card-top { 
-      width: 100%; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center;
-      text-align: center;
-    }
-    
-    .logo { 
-      width: 160px; 
-      height: auto; 
-      filter: drop-shadow(0 6px 18px rgba(0,0,0,0.25)); 
-      margin-top: 6px;
-    }
-    
-    .title { 
-      font-family: Pacifico, cursive; 
-      font-size: 56px; 
-      letter-spacing: 1px; 
-      margin: 18px 0 6px; 
-      color: white; 
-      text-shadow: 0 6px 24px rgba(0,0,0,0.35);
-    }
-    
-    .subtitle { 
-      font-size: 14px; 
-      opacity: 0.95; 
-      margin-bottom: 6px;
-      font-weight: 600;
-    }
-    
-    .message-box { 
-      width: 92%; 
-      background: var(--card-bg); 
-      padding: 20px; 
-      border-radius: 14px; 
-      border: 1px solid var(--border-color); 
-      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-      text-align: center;
-    }
-    
-    .message-text { 
-      font-size: 18px; 
-      line-height: 1.4; 
-      color: white;
-      font-weight: 500;
-    }
-    
-    .verses { 
-      width: 92%; 
-      margin-bottom: 8px; 
-      padding: 14px; 
-      border-radius: 12px; 
-      background: rgba(0,0,0,0.25); 
-      font-size: 13px; 
-      color: #f1f5f9;
-    }
-    
-    .footer { 
-      width: 100%; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      padding-bottom: 8px;
-    }
-    
-    .share-row { 
-      display: flex; 
-      gap: 8px; 
-      flex-wrap: wrap; 
-      margin-top: 16px;
-    }
-    
-    .status { 
-      margin-top: 12px; 
-      padding: 8px 12px; 
-      border-radius: 8px; 
-      background: rgba(255,255,255,0.05);
-      font-size: 12px;
-    }
-    
-    .status.success { background: rgba(76, 175, 80, 0.2); }
-    .status.error { background: rgba(244, 67, 54, 0.2); }
-    .status.loading { background: rgba(33, 150, 243, 0.2); }
-    
-    @media (max-width: 980px) {
-      .app { grid-template-columns: 1fr; }
-      .card-preview { height: 420px; padding: 20px; }
-      .title { font-size: 42px; }
-    }
-    
-    @media (max-width: 480px) {
-      body { padding: 16px; }
-      .panel { padding: 16px; }
-      .card-preview { height: 380px; padding: 16px; }
-      .title { font-size: 36px; }
-      .message-text { font-size: 16px; }
-      .btn { padding: 8px 12px; font-size: 12px; }
-    }
-    
-    /* Loading animation */
-    .loading {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 1s ease-in-out infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarjeta ULTRA - Generador de Tarjetas Inspiradoras</title>
+    <meta name="description" content="Crea y comparte tarjetas inspiradoras con versículos bíblicos">
+    <style>
+        :root {
+            --bg1: #6a11cb;
+            --bg2: #2575fc;
+            --accent: #fff;
+            --card-bg: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+            --text-primary: rgba(255,255,255,0.95);
+            --text-secondary: rgba(255,255,255,0.8);
+            --border-color: rgba(255,255,255,0.06);
+            --shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { 
+            height: 100%; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg1), var(--bg2));
+            color: var(--accent);
+        }
+        
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .app { 
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .app {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: white;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: 2px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08);
+        }
+        
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 16px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.95);
+            color: #0b1220;
+            text-decoration: none;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .btn.ghost {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.12);
+            color: var(--accent);
+        }
+        
+        .btn.ghost:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .card-preview {
+            width: 100%;
+            height: 500px;
+            border-radius: 20px;
+            padding: 30px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        
+        .logo {
+            width: 140px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        
+        .card-title {
+            font-family: cursive;
+            font-size: 48px;
+            color: white;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            margin: 10px 0;
+        }
+        
+        .message-box {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            width: 90%;
+        }
+        
+        .message-text {
+            font-size: 18px;
+            line-height: 1.4;
+            color: white;
+        }
+        
+        .verses-box {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            width: 90%;
+            font-size: 13px;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            font-size: 12px;
+        }
+    </style>
 </head>
 <body>
-  <div class="app">
-    <div class="panel">
-      <h1>Generador Juvenil — Tarjeta ULTRA</h1>
-      <div class="small">Personaliza la tarjeta, comparte el link o descarga la imagen con el logo ULTRA.</div>
-
-      <label for="name">Nombre (ej. Juan)</label>
-      <input id="name" type="text" placeholder="Ej. Juan" />
-
-      <label for="message">Mensaje principal</label>
-      <textarea id="message" placeholder="Cristo te ama y tiene un propósito para ti"></textarea>
-
-      <label for="versePreset">Versículos (elige uno o agrega los tuyos)</label>
-      <select id="versePreset">
-        <option value="">-- Seleccionar versículo --</option>
-        <option value="Génesis 1:1 - En el principio creó Dios los cielos y la tierra.">Génesis 1:1</option>
-        <option value="Salmos 23:1 - El Señor es mi pastor; nada me faltará.">Salmos 23:1</option>
-        <option value="Salmos 46:1 - Dios es nuestro amparo y fortaleza, nuestro pronto auxilio en las tribulaciones.">Salmos 46:1</option>
-        <option value="Salmos 119:105 - Lámpara es a mis pies tu palabra, y lumbrera a mi camino.">Salmos 119:105</option>
-        <option value="Proverbios 3:5-6 - Confía en el Señor con todo tu corazón, y no te apoyes en tu propia prudencia. Reconócelo en todos tus caminos, y él enderezará tus veredas.">Proverbios 3:5-6</option>
-        <option value="Isaías 40:31 - Los que esperan en el Señor renovarán sus fuerzas; levantarán alas como las águilas; correrán, y no se cansarán; caminarán, y no se fatigarán.">Isaías 40:31</option>
-        <option value="Jeremías 29:11 - Porque yo sé los planes que tengo para vosotros, declara el Señor, planes de bienestar y no de calamidad, para daros porvenir y esperanza.">Jeremías 29:11</option>
-        <option value="Mateo 11:28 - Venid a mí todos los que estáis trabajados y cargados, y yo os haré descansar.">Mateo 11:28</option>
-        <option value="Juan 3:16 - Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna.">Juan 3:16</option>
-        <option value="Juan 14:6 - Jesús le dijo: Yo soy el camino, y la verdad, y la vida; nadie viene al Padre, sino por mí.">Juan 14:6</option>
-        <option value="Romanos 8:28 - Y sabemos que a los que aman a Dios, todas las cosas les ayudan a bien, esto es, a los que conforme a su propósito son llamados.">Romanos 8:28</option>
-        <option value="Romanos 12:2 - No os conforméis a este siglo, sino transformaos por medio de la renovación de vuestro entendimiento, para que comprobéis cuál sea la buena voluntad de Dios, agradable y perfecta.">Romanos 12:2</option>
-        <option value="Filipenses 4:13 - Todo lo puedo en Cristo que me fortalece.">Filipenses 4:13</option>
-        <option value="1 Corintios 10:13 - No os ha sobrevenido ninguna tentación que no sea humana; pero fiel es Dios, que no os dejará ser tentados más de lo que podéis resistir.">1 Corintios 10:13</option>
-        <option value="2 Corintios 5:17 - De modo que si alguno está en Cristo, nueva criatura es; las cosas viejas pasaron; he aquí todas son hechas nuevas.">2 Corintios 5:17</option>
-        <option value="Gálatas 5:22-23 - Mas el fruto del Espíritu es amor, gozo, paz, paciencia, benignidad, bondad, fe, mansedumbre, templanza; contra tales cosas no hay ley.">Gálatas 5:22-23</option>
-        <option value="Efesios 2:8-9 - Porque por gracia sois salvos por medio de la fe; y esto no de vosotros, pues es don de Dios; no por obras, para que nadie se gloríe.">Efesios 2:8-9</option>
-        <option value="Efesios 6:11 - Vestíos de toda la armadura de Dios, para que podáis estar firmes contra las asechanzas del diablo.">Efesios 6:11</option>
-        <option value="Filipenses 4:6-7 - Por nada estéis afanosos, sino sean conocidas vuestras peticiones delante de Dios en toda oración y ruego, con acción de gracias. Y la paz de Dios, que sobrepasa todo entendimiento, guardará vuestros corazones y vuestros pensamientos en Cristo Jesús.">Filipenses 4:6-7</option>
-        <option value="Colosenses 3:23 - Y todo lo que hagáis, hacedlo de corazón, como para el Señor y no para los hombres.">Colosenses 3:23</option>
-        <option value="1 Tesalonicenses 5:16-18 - Estad siempre gozosos. Orad sin cesar. Dad gracias en todo, porque esta es la voluntad de Dios para con vosotros en Cristo Jesús.">1 Tesalonicenses 5:16-18</option>
-        <option value="2 Timoteo 1:7 - Porque no nos ha dado Dios espíritu de cobardía, sino de poder, de amor y de dominio propio.">2 Timoteo 1:7</option>
-        <option value="Hebreos 11:1 - Es, pues, la fe la certeza de lo que se espera, la convicción de lo que no se ve.">Hebreos 11:1</option>
-        <option value="Santiago 1:5 - Y si alguno de vosotros tiene falta de sabiduría, pídala a Dios, el cual da a todos abundantemente y sin reproche, y le será dada.">Santiago 1:5</option>
-        <option value="1 Pedro 5:7 - Echad toda vuestra ansiedad sobre él, porque él tiene cuidado de vosotros.">1 Pedro 5:7</option>
-        <option value="1 Juan 1:9 - Si confesamos nuestros pecados, él es fiel y justo para perdonar nuestros pecados, y limpiarnos de toda maldad.">1 Juan 1:9</option>
-        <option value="Apocalipsis 3:20 - He aquí, yo estoy a la puerta y llamo; si alguno oye mi voz y abre la puerta, entraré a él, y cenaré con él, y él conmigo.">Apocalipsis 3:20</option>
-      </select>
-
-      <div class="row">
-        <input id="customVerse" type="text" placeholder="Agregar versículo personalizado (ej. Juan 3:16 - Porque de tal...)" />
-        <button class="btn" id="addVerseBtn">Añadir</button>
-      </div>
-
-      <div class="verses-list" id="versesList"></div>
-
-      <div style="margin-top: 16px">
-        <button class="btn" id="updatePreview">Actualizar vista</button>
-        <button class="btn ghost" id="generateLink">Generar link</button>
-        <button class="btn ghost" id="copyText">Copiar texto</button>
-        <button class="btn" id="downloadPng">Descargar imagen</button>
-      </div>
-
-      <div class="share-row">
-        <button class="btn ghost" id="shareWhatsapp">WhatsApp</button>
-        <button class="btn ghost" id="shareTwitter">Twitter</button>
-        <button class="btn ghost" id="shareFacebook">Facebook</button>
-        <button class="btn ghost" id="shareNative" style="display:none">Compartir</button>
-      </div>
-
-      <div style="margin-top: 16px">
-        <label for="shareText">Texto de vista previa para compartir</label>
-        <textarea id="shareText" readonly></textarea>
-      </div>
-
-      <div id="status" class="status">Estado: listo.</div>
+    <div class="app">
+        <div class="panel">
+            <h1>Generador Tarjeta ULTRA</h1>
+            <div class="subtitle">Crea tarjetas inspiradoras con versículos bíblicos</div>
+            
+            <div class="form-group">
+                <label for="name">Nombre del destinatario</label>
+                <input type="text" id="name" placeholder="Ej: Juan" value="Amigo">
+            </div>
+            
+            <div class="form-group">
+                <label for="message">Mensaje principal</label>
+                <textarea id="message" placeholder="Escribe un mensaje inspirador">Cristo te ama y tiene un propósito para tu vida</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="versePreset">Seleccionar versículo</label>
+                <select id="versePreset">
+                    <option value="">-- Elige un versículo --</option>
+                    <option value="Filipenses 4:13 - Todo lo puedo en Cristo que me fortalece.">Filipenses 4:13</option>
+                    <option value="Jeremías 29:11 - Porque yo sé los planes que tengo para vosotros, planes de bienestar y no de calamidad.">Jeremías 29:11</option>
+                    <option value="Salmos 23:1 - El Señor es mi pastor; nada me faltará.">Salmos 23:1</option>
+                    <option value="Juan 3:16 - Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito.">Juan 3:16</option>
+                    <option value="Romanos 8:28 - Todas las cosas ayudan a bien a los que aman a Dios.">Romanos 8:28</option>
+                    <option value="Proverbios 3:5-6 - Confía en el Señor con todo tu corazón.">Proverbios 3:5-6</option>
+                    <option value="Isaías 40:31 - Los que esperan en el Señor renovarán sus fuerzas.">Isaías 40:31</option>
+                    <option value="Mateo 11:28 - Venid a mí todos los que estáis trabajados y cargados.">Mateo 11:28</option>
+                    <option value="2 Corintios 5:17 - De modo que si alguno está en Cristo, nueva criatura es.">2 Corintios 5:17</option>
+                    <option value="Filipenses 4:6-7 - Por nada estéis afanosos, sino sean conocidas vuestras peticiones delante de Dios.">Filipenses 4:6-7</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Versículos agregados</label>
+                <div id="versesList" style="min-height: 40px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="color: var(--text-secondary); text-align: center;">No hay versículos agregados</div>
+                </div>
+                <button class="btn" id="addVerseBtn">Agregar Versículo</button>
+            </div>
+            
+            <div class="form-group">
+                <button class="btn" id="updatePreview">Actualizar Vista</button>
+                <button class="btn ghost" id="generateLink">Generar Link</button>
+                <button class="btn ghost" id="downloadPng">Descargar Imagen</button>
+            </div>
+            
+            <div class="form-group">
+                <label>Compartir en:</label>
+                <div>
+                    <button class="btn ghost" id="shareWhatsapp">WhatsApp</button>
+                    <button class="btn ghost" id="shareTwitter">Twitter</button>
+                    <button class="btn ghost" id="shareFacebook">Facebook</button>
+                </div>
+            </div>
+            
+            <div id="status" class="status">Listo para crear tu tarjeta...</div>
+        </div>
+        
+        <div class="panel">
+            <div class="card-preview" id="cardPreview">
+                <div>
+                    <div style="font-size: 14px; opacity: 0.9;">FAMILIA</div>
+                    <div class="card-title">GRUPO 2</div>
+                    <div style="font-size: 14px; opacity: 0.9;" id="previewName">Para: Amigo</div>
+                </div>
+                
+                <div class="message-box">
+                    <div class="message-text" id="previewMessage">Cristo te ama y tiene un propósito para tu vida</div>
+                </div>
+                
+                <div class="verses-box">
+                    <div style="font-size: 12px; opacity: 0.8; margin-bottom: 8px;">Versículos:</div>
+                    <div id="previewVersesList">
+                        <div style="font-size: 12px; opacity: 0.7;">(Agrega versículos)</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <svg class="logo" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" fill="white">
+                        <polygon points="60,10 110,90 10,90" stroke="white" stroke-width="4" fill="none"/>
+                        <text x="60" y="75" text-anchor="middle" font-size="24" font-family="Arial" fill="white" font-weight="bold">ULTRA</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="panel preview-wrap">
-      <div class="card-preview" id="cardPreview">
-        <div class="card-top">
-          <div class="subtitle">FAMILIA</div>
-          <div class="title" id="previewTitle">GRUPO 2</div>
-          <div class="subtitle" id="previewName">Para: Amigo</div>
-        </div>
-
-        <div class="message-box">
-          <div class="message-text" id="previewMessage">Cristo te ama y tiene un propósito para ti</div>
-        </div>
-
-        <div class="verses" id="previewVerses">
-          <div class="small">Versículos:</div>
-          <div id="previewVersesList"></div>
-        </div>
-
-        <div class="footer">
-          <!-- SVG logo estilo triángulo ULTRA -->
-          <svg class="logo" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" fill="white">
-            <polygon points="60,10 110,90 10,90" stroke="white" stroke-width="4" fill="none"/>
-            <text x="60" y="75" text-anchor="middle" font-size="24" font-family="Montserrat" fill="white" font-weight="700">ULTRA</text>
-          </svg>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // Utility functions
-    const qs = (id) => document.getElementById(id);
-    const escapeHtml = (s) => (s+'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    
-    // Data management
-    function getVerses() { 
-      try { 
-        return JSON.parse(localStorage.getItem('ultra_verses') || '[]'); 
-      } catch(e) { 
-        return []; 
-      } 
-    }
-    
-    function setVerses(verses) { 
-      localStorage.setItem('ultra_verses', JSON.stringify(verses)); 
-    }
-    
-    function setAppData(data) {
-      localStorage.setItem('ultra_app_data', JSON.stringify(data));
-    }
-    
-    function getAppData() {
-      try {
-        return JSON.parse(localStorage.getItem('ultra_app_data') || '{}');
-      } catch(e) {
-        return {};
-      }
-    }
-
-    // UI functions
-    function renderVerses() {
-      const container = qs('versesList');
-      const verses = getVerses();
-      
-      container.innerHTML = '';
-      
-      if (verses.length === 0) {
-        container.innerHTML = '<div class="small" style="text-align: center; padding: 20px;">No hay versículos añadidos</div>';
-        return;
-      }
-      
-      verses.forEach((verse, index) => {
-        const element = document.createElement('div');
-        element.className = 'verse-item';
-        element.innerHTML = `
-          <div style="flex: 1">${escapeHtml(verse)}</div>
-          <div style="margin-left: 8px">
-            <button class="btn ghost" data-index="${index}">Eliminar</button>
-          </div>
-        `;
-        container.appendChild(element);
-      });
-      
-      // Add event listeners to delete buttons
-      container.querySelectorAll('button').forEach(button => {
-        button.addEventListener('click', () => {
-          const index = parseInt(button.getAttribute('data-index'));
-          const verses = getVerses();
-          verses.splice(index, 1);
-          setVerses(verses);
-          renderVerses();
-          updatePreview();
-        });
-      });
-    }
-
-    function updatePreview() {
-      const name = qs('name').value.trim() || 'Amigo';
-      const message = qs('message').value.trim() || 'Cristo te ama y tiene un propósito para ti';
-      const verses = getVerses();
-      
-      // Update preview elements
-      qs('previewName').textContent = 'Para: ' + name;
-      qs('previewMessage').textContent = message;
-      
-      // Update verses list
-      const versesList = qs('previewVersesList');
-      versesList.innerHTML = '';
-      
-      if (verses.length === 0) {
-        versesList.innerHTML = '<div class="small">(Sin versículos añadidos)</div>';
-      } else {
-        verses.forEach(verse => {
-          const verseElement = document.createElement('div');
-          verseElement.style.marginBottom = '6px';
-          verseElement.textContent = verse;
-          versesList.appendChild(verseElement);
-        });
-      }
-      
-      // Update share text
-      const shareLines = [
-        'Para: ' + name,
-        '',
-        message,
-        ''
-      ];
-      
-      if (verses.length > 0) {
-        shareLines.push('Versículos:');
-        verses.forEach(verse => shareLines.push('- ' + verse));
-        shareLines.push('');
-      }
-      
-      shareLines.push('Te comparto esto con cariño.');
-      qs('shareText').value = shareLines.join('\n');
-      
-      // Save current state
-      setAppData({
-        name: qs('name').value,
-        message: qs('message').value,
-        lastUpdated: new Date().toISOString()
-      });
-    }
-
-    function loadFromUrl() {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const dataParam = params.get('data');
+    <script>
+        // Funciones básicas
+        function $(id) { return document.getElementById(id); }
         
-        if (!dataParam) return;
+        let verses = [];
         
-        const decoded = decodeURIComponent(atob(dataParam));
-        const data = JSON.parse(decoded);
-        
-        if (data.name) qs('name').value = data.name;
-        if (data.message) qs('message').value = data.message;
-        if (data.verses) setVerses(data.verses);
-        
-        renderVerses();
-        updatePreview();
-        showStatus('Datos cargados desde el enlace.', 'success');
-      } catch(e) {
-        console.warn('Error loading from URL:', e);
-      }
-    }
-
-    function generateLink() {
-      const payload = {
-        name: qs('name').value,
-        message: qs('message').value,
-        verses: getVerses(),
-        version: '2.0'
-      };
-      
-      const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
-      return window.location.origin + window.location.pathname + '?data=' + encoded;
-    }
-
-    function showStatus(message, type = '') {
-      const status = qs('status');
-      status.textContent = message;
-      status.className = 'status';
-      
-      if (type) {
-        status.classList.add(type);
-      }
-      
-      // Auto-clear success messages after 3 seconds
-      if (type === 'success') {
-        setTimeout(() => {
-          if (status.textContent === message) {
-            status.textContent = 'Listo.';
-            status.className = 'status';
-          }
-        }, 3000);
-      }
-    }
-
-    // html2canvas loading and image generation
-    const HTML2CANVAS_SOURCES = [
-      'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
-      'https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js',
-      'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
-    ];
-
-    function loadScript(url, timeout = 15000) {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = url;
-        script.async = true;
-        script.crossOrigin = 'anonymous';
-        
-        let loaded = false;
-        
-        script.onload = () => {
-          if (loaded) return;
-          loaded = true;
-          resolve(url);
-        };
-        
-        script.onerror = (error) => {
-          if (loaded) return;
-          loaded = true;
-          reject(error);
-        };
-        
-        document.head.appendChild(script);
-        
-        setTimeout(() => {
-          if (loaded) return;
-          loaded = true;
-          reject(new Error(`Timeout loading script: ${url}`));
-        }, timeout);
-      });
-    }
-
-    async function ensureHtml2canvas() {
-      if (window.html2canvas) {
-        return window.html2canvas;
-      }
-      
-      showStatus('Cargando html2canvas...', 'loading');
-      
-      for (const source of HTML2CANVAS_SOURCES) {
-        try {
-          await loadScript(source);
-          if (window.html2canvas) {
-            showStatus('html2canvas cargado correctamente.', 'success');
-            return window.html2canvas;
-          }
-        } catch (error) {
-          console.warn(`Failed to load from ${source}:`, error);
-        }
-      }
-      
-      throw new Error('No se pudo cargar html2canvas desde ninguna fuente.');
-    }
-
-    async function downloadImage() {
-      const downloadBtn = qs('downloadPng');
-      const originalText = downloadBtn.innerHTML;
-      
-      try {
-        // Show loading state
-        downloadBtn.innerHTML = '<span class="loading"></span> Generando...';
-        downloadBtn.disabled = true;
-        
-        showStatus('Preparando exportación...', 'loading');
-        
-        const html2canvas = await ensureHtml2canvas();
-        
-        showStatus('Generando imagen...', 'loading');
-        
-        const canvas = await html2canvas(qs('cardPreview'), {
-          scale: 2,
-          backgroundColor: null,
-          useCORS: true,
-          logging: false
-        });
-        
-        canvas.toBlob(blob => {
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `tarjeta_ultra_${Date.now()}.png`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-          
-          showStatus('Imagen descargada correctamente.', 'success');
-        }, 'image/png', 0.95);
-        
-      } catch (error) {
-        console.error('Error generating image:', error);
-        showStatus('Error al generar la imagen: ' + error.message, 'error');
-      } finally {
-        // Restore button state
-        downloadBtn.innerHTML = originalText;
-        downloadBtn.disabled = false;
-      }
-    }
-
-    // Initialize application
-    document.addEventListener('DOMContentLoaded', () => {
-      // Initialize data if not exists
-      if (!localStorage.getItem('ultra_verses')) {
-        setVerses([]);
-      }
-      
-      // Load saved data
-      const appData = getAppData();
-      if (appData.name) qs('name').value = appData.name;
-      if (appData.message) qs('message').value = appData.message;
-      
-      // Render initial state
-      renderVerses();
-      loadFromUrl();
-      updatePreview();
-      
-      // Event listeners
-      qs('addVerseBtn').addEventListener('click', () => {
-        const presetVerse = qs('versePreset').value;
-        const customVerse = qs('customVerse').value.trim();
-        const verses = getVerses();
-        
-        if (presetVerse) {
-          verses.push(presetVerse);
+        function updatePreview() {
+            $('previewName').textContent = 'Para: ' + ($('name').value || 'Amigo');
+            $('previewMessage').textContent = $('message').value || 'Cristo te ama y tiene un propósito para tu vida';
+            
+            const versesList = $('previewVersesList');
+            versesList.innerHTML = '';
+            
+            if (verses.length === 0) {
+                versesList.innerHTML = '<div style="font-size: 12px; opacity: 0.7;">(Agrega versículos)</div>';
+            } else {
+                verses.forEach(verse => {
+                    const div = document.createElement('div');
+                    div.textContent = verse;
+                    div.style.marginBottom = '5px';
+                    div.style.fontSize = '12px';
+                    versesList.appendChild(div);
+                });
+            }
+            
+            updateStatus('Vista previa actualizada');
         }
         
-        if (customVerse) {
-          verses.push(customVerse);
+        function updateStatus(message) {
+            $('status').textContent = message;
+            setTimeout(() => {
+                if ($('status').textContent === message) {
+                    $('status').textContent = 'Listo';
+                }
+            }, 3000);
         }
         
-        setVerses(verses);
-        renderVerses();
-        qs('customVerse').value = '';
-        qs('versePreset').value = '';
-        updatePreview();
-        
-        if (presetVerse || customVerse) {
-          showStatus('Versículo añadido.', 'success');
+        function generateLink() {
+            const data = {
+                name: $('name').value,
+                message: $('message').value,
+                verses: verses
+            };
+            const encoded = btoa(JSON.stringify(data));
+            return window.location.origin + window.location.pathname + '?data=' + encoded;
         }
-      });
-      
-      qs('updatePreview').addEventListener('click', () => {
-        updatePreview();
-        showStatus('Vista previa actualizada.', 'success');
-      });
-      
-      qs('generateLink').addEventListener('click', () => {
-        const link = generateLink();
-        const shareText = qs('shareText');
-        shareText.value = shareText.value + '\n\nLink: ' + link;
         
-        navigator.clipboard.writeText(link).then(() => {
-          showStatus('Enlace copiado al portapapeles.', 'success');
-        }).catch(() => {
-          // Fallback for browsers that don't support clipboard API
-          shareText.select();
-          document.execCommand('copy');
-          showStatus('Enlace seleccionado, copia manualmente (Ctrl+C).', 'success');
+        // Event Listeners
+        $('addVerseBtn').addEventListener('click', function() {
+            const verse = $('versePreset').value;
+            if (verse) {
+                verses.push(verse);
+                updateVersesList();
+                updatePreview();
+                $('versePreset').value = '';
+            }
         });
-      });
-      
-      qs('copyText').addEventListener('click', () => {
-        const shareText = qs('shareText');
         
-        navigator.clipboard.writeText(shareText.value).then(() => {
-          showStatus('Texto copiado al portapapeles.', 'success');
-        }).catch(() => {
-          // Fallback
-          shareText.select();
-          document.execCommand('copy');
-          showStatus('Texto seleccionado, copia manualmente (Ctrl+C).', 'success');
+        $('updatePreview').addEventListener('click', updatePreview);
+        
+        $('generateLink').addEventListener('click', function() {
+            const link = generateLink();
+            navigator.clipboard.writeText(link).then(() => {
+                updateStatus('Link copiado al portapapeles: ' + link);
+            }).catch(() => {
+                prompt('Copia este link:', link);
+            });
         });
-      });
-      
-      // Social sharing
-      qs('shareWhatsapp').addEventListener('click', () => {
-        const text = encodeURIComponent(qs('shareText').value + '\n' + generateLink());
-        window.open('https://wa.me/?text=' + text, '_blank');
-      });
-      
-      qs('shareTwitter').addEventListener('click', () => {
-        const text = encodeURIComponent(qs('shareText').value);
-        const url = encodeURIComponent(generateLink());
-        window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + url, '_blank');
-      });
-      
-      qs('shareFacebook').addEventListener('click', () => {
-        const url = encodeURIComponent(generateLink());
-        window.open('https://www.facebook.com/sharer/sharer.php?u=' + url, '_blank');
-      });
-      
-      // Native sharing
-      const nativeShareBtn = qs('shareNative');
-      if (navigator.share) {
-        nativeShareBtn.style.display = 'inline-block';
-        nativeShareBtn.addEventListener('click', () => {
-          navigator.share({
-            title: 'Tarjeta ULTRA',
-            text: qs('shareText').value,
-            url: generateLink()
-          }).catch(error => {
-            console.log('Share cancelled:', error);
-          });
+        
+        $('shareWhatsapp').addEventListener('click', function() {
+            const text = encodeURIComponent('Mira esta tarjeta inspiradora: ' + generateLink());
+            window.open('https://wa.me/?text=' + text, '_blank');
         });
-      }
-      
-      // Image download
-      qs('downloadPng').addEventListener('click', downloadImage);
-      
-      // Auto-update preview on input changes
-      qs('name').addEventListener('input', updatePreview);
-      qs('message').addEventListener('input', updatePreview);
-      
-      // Add verse on Enter key in custom verse field
-      qs('customVerse').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          qs('addVerseBtn').click();
+        
+        $('shareTwitter').addEventListener('click', function() {
+            const text = encodeURIComponent('Tarjeta inspiradora ULTRA');
+            const url = encodeURIComponent(generateLink());
+            window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + url, '_blank');
+        });
+        
+        $('shareFacebook').addEventListener('click', function() {
+            const url = encodeURIComponent(generateLink());
+            window.open('https://www.facebook.com/sharer/sharer.php?u=' + url, '_blank');
+        });
+        
+        $('downloadPng').addEventListener('click', function() {
+            updateStatus('Descarga de imagen no disponible en esta versión. Usa los botones de compartir.');
+        });
+        
+        function updateVersesList() {
+            const container = $('versesList');
+            container.innerHTML = '';
+            
+            if (verses.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-secondary); text-align: center;">No hay versículos agregados</div>';
+                return;
+            }
+            
+            verses.forEach((verse, index) => {
+                const div = document.createElement('div');
+                div.style.display = 'flex';
+                div.style.justifyContent = 'space-between';
+                div.style.alignItems = 'center';
+                div.style.padding = '8px';
+                div.style.marginBottom = '5px';
+                div.style.background = 'rgba(255,255,255,0.05)';
+                div.style.borderRadius = '6px';
+                
+                const text = document.createElement('span');
+                text.textContent = verse;
+                text.style.fontSize = '12px';
+                text.style.flex = '1';
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'X';
+                removeBtn.style.background = 'rgba(255,0,0,0.3)';
+                removeBtn.style.border = 'none';
+                removeBtn.style.color = 'white';
+                removeBtn.style.borderRadius = '4px';
+                removeBtn.style.padding = '2px 6px';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.style.marginLeft = '10px';
+                
+                removeBtn.addEventListener('click', function() {
+                    verses.splice(index, 1);
+                    updateVersesList();
+                    updatePreview();
+                });
+                
+                div.appendChild(text);
+                div.appendChild(removeBtn);
+                container.appendChild(div);
+            });
         }
-      });
-      
-      // Preload html2canvas in background
-      ensureHtml2canvas().catch(() => {
-        // Silent fail - will try again when download is clicked
-      });
-      
-      showStatus('Aplicación cargada correctamente.', 'success');
-    });
-  </script>
+        
+        // Cargar datos desde URL si existen
+        function loadFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const data = urlParams.get('data');
+            
+            if (data) {
+                try {
+                    const decoded = JSON.parse(atob(data));
+                    if (decoded.name) $('name').value = decoded.name;
+                    if (decoded.message) $('message').value = decoded.message;
+                    if (decoded.verses) verses = decoded.verses;
+                    
+                    updateVersesList();
+                    updatePreview();
+                    updateStatus('Datos cargados desde el enlace');
+                } catch (e) {
+                    console.error('Error loading from URL:', e);
+                }
+            }
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePreview();
+            loadFromURL();
+            updateStatus('Aplicación cargada correctamente');
+        });
+    </script>
 </body>
 </html>
