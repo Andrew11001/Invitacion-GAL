@@ -1,0 +1,24 @@
+{
+  "name": "tarjeta-ultra",
+  "version": "2.0.0",
+  "description": "Generador de tarjetas inspiradoras ULTRA para grupos juveniles",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'No build process needed'",
+    "dev": "echo 'Open index.html in browser'"
+  },
+  "keywords": [
+    "ultra",
+    "tarjeta",
+    "biblica",
+    "versiculos",
+    "generador",
+    "juvenil"
+  ],
+  "author": "ULTRA Grupo Juvenil",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/tarjeta-ultra.git"
+  }
+}
