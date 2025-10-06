@@ -1,25 +1,9 @@
-# Enhanced ZIP package creator for the ULTRA card web app
-import os
-import zipfile
-import textwrap
-import json
-from datetime import datetime
-
-# Configuration
-OUT_DIR = "/mnt/data/tarjeta_ultra_package"
-PACKAGE_NAME = "tarjeta_ultra_package"
-VERSION = "1.1"
-
-# Create output directory
-os.makedirs(OUT_DIR, exist_ok=True)
-
-# Enhanced base HTML with better structure and functionality
-index_html = r"""<!doctype html>
+<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="Generador de tarjetas ULTRA - Crea y comparte mensajes inspiradores" />
+  <meta name="description" content="Generador de tarjetas ULTRA - Crea y comparte mensajes inspiradores con versículos bíblicos" />
   <meta name="theme-color" content="#6a11cb" />
   <title>Tarjeta ULTRA — Seguir al Señor</title>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -318,14 +302,33 @@ index_html = r"""<!doctype html>
       <label for="versePreset">Versículos (elige uno o agrega los tuyos)</label>
       <select id="versePreset">
         <option value="">-- Seleccionar versículo --</option>
+        <option value="Génesis 1:1 - En el principio creó Dios los cielos y la tierra.">Génesis 1:1</option>
+        <option value="Salmos 23:1 - El Señor es mi pastor; nada me faltará.">Salmos 23:1</option>
+        <option value="Salmos 46:1 - Dios es nuestro amparo y fortaleza, nuestro pronto auxilio en las tribulaciones.">Salmos 46:1</option>
+        <option value="Salmos 119:105 - Lámpara es a mis pies tu palabra, y lumbrera a mi camino.">Salmos 119:105</option>
+        <option value="Proverbios 3:5-6 - Confía en el Señor con todo tu corazón, y no te apoyes en tu propia prudencia. Reconócelo en todos tus caminos, y él enderezará tus veredas.">Proverbios 3:5-6</option>
+        <option value="Isaías 40:31 - Los que esperan en el Señor renovarán sus fuerzas; levantarán alas como las águilas; correrán, y no se cansarán; caminarán, y no se fatigarán.">Isaías 40:31</option>
+        <option value="Jeremías 29:11 - Porque yo sé los planes que tengo para vosotros, declara el Señor, planes de bienestar y no de calamidad, para daros porvenir y esperanza.">Jeremías 29:11</option>
+        <option value="Mateo 11:28 - Venid a mí todos los que estáis trabajados y cargados, y yo os haré descansar.">Mateo 11:28</option>
+        <option value="Juan 3:16 - Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna.">Juan 3:16</option>
+        <option value="Juan 14:6 - Jesús le dijo: Yo soy el camino, y la verdad, y la vida; nadie viene al Padre, sino por mí.">Juan 14:6</option>
+        <option value="Romanos 8:28 - Y sabemos que a los que aman a Dios, todas las cosas les ayudan a bien, esto es, a los que conforme a su propósito son llamados.">Romanos 8:28</option>
+        <option value="Romanos 12:2 - No os conforméis a este siglo, sino transformaos por medio de la renovación de vuestro entendimiento, para que comprobéis cuál sea la buena voluntad de Dios, agradable y perfecta.">Romanos 12:2</option>
         <option value="Filipenses 4:13 - Todo lo puedo en Cristo que me fortalece.">Filipenses 4:13</option>
-        <option value="Jeremías 29:11 - Porque yo sé los planes que tengo para vosotros...">Jeremías 29:11</option>
-        <option value="Salmo 23:1 - El Señor es mi pastor; nada me faltará.">Salmo 23:1</option>
-        <option value="Romanos 8:28 - Todas las cosas ayudan a bien...">Romanos 8:28</option>
-        <option value="Proverbios 3:5-6 - Confía en el Señor con todo tu corazón...">Proverbios 3:5-6</option>
-        <option value="Mateo 11:28 - Venid a mí todos los que estáis trabajados y cargados...">Mateo 11:28</option>
-        <option value="Juan 3:16 - Porque de tal manera amó Dios al mundo...">Juan 3:16</option>
-        <option value="Isaías 40:31 - Los que esperan en el Señor renovarán sus fuerzas...">Isaías 40:31</option>
+        <option value="1 Corintios 10:13 - No os ha sobrevenido ninguna tentación que no sea humana; pero fiel es Dios, que no os dejará ser tentados más de lo que podéis resistir.">1 Corintios 10:13</option>
+        <option value="2 Corintios 5:17 - De modo que si alguno está en Cristo, nueva criatura es; las cosas viejas pasaron; he aquí todas son hechas nuevas.">2 Corintios 5:17</option>
+        <option value="Gálatas 5:22-23 - Mas el fruto del Espíritu es amor, gozo, paz, paciencia, benignidad, bondad, fe, mansedumbre, templanza; contra tales cosas no hay ley.">Gálatas 5:22-23</option>
+        <option value="Efesios 2:8-9 - Porque por gracia sois salvos por medio de la fe; y esto no de vosotros, pues es don de Dios; no por obras, para que nadie se gloríe.">Efesios 2:8-9</option>
+        <option value="Efesios 6:11 - Vestíos de toda la armadura de Dios, para que podáis estar firmes contra las asechanzas del diablo.">Efesios 6:11</option>
+        <option value="Filipenses 4:6-7 - Por nada estéis afanosos, sino sean conocidas vuestras peticiones delante de Dios en toda oración y ruego, con acción de gracias. Y la paz de Dios, que sobrepasa todo entendimiento, guardará vuestros corazones y vuestros pensamientos en Cristo Jesús.">Filipenses 4:6-7</option>
+        <option value="Colosenses 3:23 - Y todo lo que hagáis, hacedlo de corazón, como para el Señor y no para los hombres.">Colosenses 3:23</option>
+        <option value="1 Tesalonicenses 5:16-18 - Estad siempre gozosos. Orad sin cesar. Dad gracias en todo, porque esta es la voluntad de Dios para con vosotros en Cristo Jesús.">1 Tesalonicenses 5:16-18</option>
+        <option value="2 Timoteo 1:7 - Porque no nos ha dado Dios espíritu de cobardía, sino de poder, de amor y de dominio propio.">2 Timoteo 1:7</option>
+        <option value="Hebreos 11:1 - Es, pues, la fe la certeza de lo que se espera, la convicción de lo que no se ve.">Hebreos 11:1</option>
+        <option value="Santiago 1:5 - Y si alguno de vosotros tiene falta de sabiduría, pídala a Dios, el cual da a todos abundantemente y sin reproche, y le será dada.">Santiago 1:5</option>
+        <option value="1 Pedro 5:7 - Echad toda vuestra ansiedad sobre él, porque él tiene cuidado de vosotros.">1 Pedro 5:7</option>
+        <option value="1 Juan 1:9 - Si confesamos nuestros pecados, él es fiel y justo para perdonar nuestros pecados, y limpiarnos de toda maldad.">1 Juan 1:9</option>
+        <option value="Apocalipsis 3:20 - He aquí, yo estoy a la puerta y llamo; si alguno oye mi voz y abre la puerta, entraré a él, y cenaré con él, y él conmigo.">Apocalipsis 3:20</option>
       </select>
 
       <div class="row">
@@ -528,7 +531,7 @@ index_html = r"""<!doctype html>
         name: qs('name').value,
         message: qs('message').value,
         verses: getVerses(),
-        version: '1.1'
+        version: '2.0'
       };
       
       const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
@@ -791,179 +794,3 @@ index_html = r"""<!doctype html>
   </script>
 </body>
 </html>
-"""
-
-# Create Instagram post HTML (1080x1080)
-insta_html = index_html.replace(
-    'card-preview{width:100%;height:520px', 
-    'card-preview{width:1080px;height:1080px'
-).replace(
-    "body{background:linear-gradient(135deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;padding:24px;color:var(--accent)}",
-    "body{background:linear-gradient(135deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;padding:0;color:var(--accent);min-height:100vh}"
-).replace(
-    "<title>", 
-    "<title>Tarjeta ULTRA - Post Instagram</title>\n  <meta name=\"description\" content=\"Tarjeta ULTRA optimizada para Instagram Post (1080x1080)\" />"
-)
-
-# Create Story HTML (1080x1920)
-story_html = index_html.replace(
-    'card-preview{width:100%;height:520px', 
-    'card-preview{width:1080px;height:1920px'
-).replace(
-    "body{background:linear-gradient(135deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;padding:24px;color:var(--accent)}",
-    "body{background:linear-gradient(135deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;padding:0;color:var(--accent);min-height:100vh}"
-).replace(
-    ".title { font-family: Pacifico, cursive; font-size: 56px;",
-    ".title { font-family: Pacifico, cursive; font-size: 72px;"
-).replace(
-    ".message-text { font-size: 18px;",
-    ".message-text { font-size: 24px;"
-).replace(
-    "<title>", 
-    "<title>Tarjeta ULTRA - Story Instagram</title>\n  <meta name=\"description\" content=\"Tarjeta ULTRA optimizada para Instagram Story (1080x1920)\" />"
-)
-
-# Enhanced README with better formatting
-current_date = datetime.now().strftime("%Y-%m-%d")
-readme = textwrap.dedent(f"""\
-    =============================================
-    PAQUETE TARJETA ULTRA - v{VERSION}
-    Fecha: {current_date}
-    =============================================
-
-    DESCRIPCIÓN:
-    ------------
-    Paquete completo para generar y compartir tarjetas inspiradoras ULTRA.
-    Incluye versión web interactiva y versiones optimizadas para redes sociales.
-
-    ARCHIVOS INCLUIDOS:
-    -------------------
-    - index.html    -> Versión web principal (responsive, interactiva)
-    - insta.html    -> Optimizado para Post Instagram (1080x1080 píxeles)
-    - story.html    -> Optimizado para Story Instagram (1080x1920 píxeles)
-    - README.txt    -> Este archivo de instrucciones
-
-    CARACTERÍSTICAS MEJORADAS:
-    --------------------------
-    ✓ Interfaz moderna con efectos visuales
-    ✓ Diseño completamente responsive
-    ✓ Guardado automático del progreso
-    ✓ Mejor manejo de errores
-    ✓ Estados de carga y retroalimentación
-    ✓ Compartición nativa en dispositivos móviles
-    ✓ Múltiples fuentes para html2canvas
-    ✓ Accesibilidad mejorada
-
-    INSTRUCCIONES DE USO:
-    ---------------------
-
-    1. DESCOMPRIMIR:
-       - Extrae todos los archivos en una carpeta de tu equipo
-
-    2. USO BÁSICO:
-       - Abre 'index.html' en cualquier navegador moderno
-       - Personaliza el nombre, mensaje y versículos
-       - La vista previa se actualiza automáticamente
-       - Usa los botones de la barra de herramientas para las acciones
-
-    3. COMPARTIR:
-       - WHATSAPP: Comparte texto + enlace personalizado
-       - TWITTER/FACEBOOK: Publica directamente en estas redes
-       - COMPARTIR NATIVO: En móviles, usa el botón del sistema
-       - COPIAR TEXTO: Copia el texto formateado al portapapeles
-       - GENERAR LINK: Crea un enlace personalizado con tus datos
-
-    4. DESCARGAR IMAGEN:
-       - Haz clic en "Descargar imagen" para generar un PNG
-       - La página cargará automáticamente html2canvas
-       - Para Instagram: usa insta.html (post) o story.html (story)
-
-    5. PARA REDES SOCIALES:
-       - POST INSTAGRAM: Abre insta.html y descarga la imagen
-       - STORY INSTAGRAM: Abre story.html y descarga la imagen
-
-    CONFIGURACIÓN AVANZADA:
-    -----------------------
-
-    - Los datos se guardan automáticamente en el navegador
-    - Los enlaces personalizados contienen toda la información
-    - Puedes agregar versículos personalizados además de los predefinidos
-
-    COMPATIBILIDAD:
-    ---------------
-    ✔ Chrome 60+    ✔ Firefox 55+    ✔ Safari 12+    ✔ Edge 79+
-
-    REQUISITOS:
-    -----------
-    - Navegador moderno con JavaScript habilitado
-    - Conexión a Internet (para fuentes Google y html2canvas)
-    - Almacenamiento local del navegador activado
-
-    SOLUCIÓN DE PROBLEMAS:
-    ----------------------
-
-    • Si la descarga de imagen falla:
-      - Verifica tu conexión a Internet
-      - Intenta en un navegador diferente
-      - Asegúrate de que no hay bloqueadores de scripts
-
-    • Si los datos no se guardan:
-      - Verifica que las cookies estén habilitadas
-      - Intenta en modo incógnito/navegación privada
-
-    • Para mejor calidad de imagen:
-      - Usa las versiones específicas (insta.html, story.html)
-      - Espera a que se complete la generación
-
-    CONTACTO Y SOPORTE:
-    -------------------
-    Para problemas técnicos o personalizaciones adicionales,
-    contacta al desarrollador.
-
-    =============================================
-    ¡Disfruta creando y compartiendo tarjetas ULTRA!
-    =============================================
-    """)
-
-# Create package.json for version tracking
-package_info = {
-    "name": "tarjeta-ultra-generator",
-    "version": VERSION,
-    "description": "Generador de tarjetas inspiradoras ULTRA para grupos juveniles",
-    "main": "index.html",
-    "author": "ULTRA Grupo Juvenil",
-    "created": current_date,
-    "files": ["index.html", "insta.html", "story.html", "README.txt"]
-}
-
-# Write all files
-files = {
-    "index.html": index_html,
-    "insta.html": insta_html,
-    "story.html": story_html,
-    "README.txt": readme,
-    "package.json": json.dumps(package_info, indent=2, ensure_ascii=False)
-}
-
-print(f"Creando paquete en: {OUT_DIR}")
-for name, content in files.items():
-    path = os.path.join(OUT_DIR, name)
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(content)
-    print(f"✓ Creado: {name}")
-
-# Create ZIP archive
-zip_filename = f"{PACKAGE_NAME}_v{VERSION}.zip"
-zip_path = os.path.join("/mnt/data", zip_filename)
-
-with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-    for root, _, files in os.walk(OUT_DIR):
-        for file in files:
-            file_path = os.path.join(root, file)
-            arcname = os.path.relpath(file_path, OUT_DIR)
-            zipf.write(file_path, arcname)
-
-print(f"✓ Paquete ZIP creado: {zip_filename}")
-print(f"✓ Total archivos: {len(files)}")
-print(f"✓ Versión: {VERSION}")
-print("¡Paquete completado exitosamente!")
