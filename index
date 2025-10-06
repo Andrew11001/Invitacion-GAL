@@ -1,0 +1,969 @@
+# Enhanced ZIP package creator for the ULTRA card web app
+import os
+import zipfile
+import textwrap
+import json
+from datetime import datetime
+
+# Configuration
+OUT_DIR = "/mnt/data/tarjeta_ultra_package"
+PACKAGE_NAME = "tarjeta_ultra_package"
+VERSION = "1.1"
+
+# Create output directory
+os.makedirs(OUT_DIR, exist_ok=True)
+
+# Enhanced base HTML with better structure and functionality
+index_html = r"""<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Generador de tarjetas ULTRA - Crea y comparte mensajes inspiradores" />
+  <meta name="theme-color" content="#6a11cb" />
+  <title>Tarjeta ULTRA — Seguir al Señor</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg1: #6a11cb;
+      --bg2: #2575fc;
+      --accent: #fff;
+      --card-bg: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      --text-primary: rgba(255,255,255,0.95);
+      --text-secondary: rgba(255,255,255,0.8);
+      --border-color: rgba(255,255,255,0.06);
+      --shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; font-family: Montserrat, system-ui, Segoe UI, Roboto, Arial; }
+    body { 
+      background: linear-gradient(135deg, var(--bg1), var(--bg2)); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      padding: 24px; 
+      color: var(--accent);
+      line-height: 1.5;
+    }
+    
+    .app { 
+      width: 980px; 
+      max-width: 100%; 
+      display: grid; 
+      grid-template-columns: 420px 1fr; 
+      gap: 24px;
+    }
+    
+    .panel { 
+      background: var(--card-bg); 
+      border-radius: 16px; 
+      padding: 24px; 
+      box-shadow: var(--shadow); 
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(10px);
+    }
+    
+    h1 { font-size: 20px; margin: 0 0 12px; font-weight: 700; }
+    .small { font-size: 13px; color: var(--text-secondary); }
+    
+    label { 
+      display: block; 
+      font-size: 14px; 
+      color: var(--text-secondary); 
+      margin-top: 16px;
+      font-weight: 600;
+    }
+    
+    input[type="text"], textarea, select {
+      width: 100%; 
+      padding: 12px; 
+      border-radius: 12px; 
+      border: 0; 
+      background: rgba(255,255,255,0.05); 
+      color: inherit; 
+      font-size: 14px; 
+      outline: 1px solid var(--border-color);
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    
+    input[type="text"]:focus, textarea:focus, select:focus {
+      outline: 2px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+    }
+    
+    textarea { 
+      min-height: 100px; 
+      resize: vertical; 
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px; 
+      border-radius: 12px; 
+      background: rgba(255,255,255,0.95); 
+      color: #0b1220; 
+      text-decoration: none; 
+      font-weight: 700; 
+      margin-right: 8px; 
+      border: none; 
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 13px;
+    }
+    
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    .btn.ghost { 
+      background: transparent; 
+      border: 1px solid rgba(255,255,255,0.12); 
+      color: var(--accent);
+    }
+    
+    .btn.ghost:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .row { 
+      display: flex; 
+      gap: 8px; 
+      margin-top: 8px;
+    }
+    
+    .verses-list { 
+      margin-top: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .verse-item { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      padding: 10px 12px; 
+      border-radius: 10px; 
+      margin-bottom: 8px; 
+      background: rgba(255,255,255,0.03);
+      transition: background 0.2s ease;
+    }
+    
+    .verse-item:hover {
+      background: rgba(255,255,255,0.05);
+    }
+    
+    .preview-wrap { 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+    }
+    
+    .card-preview { 
+      width: 100%; 
+      height: 520px; 
+      border-radius: 20px; 
+      padding: 32px; 
+      box-sizing: border-box; 
+      background: var(--card-bg); 
+      position: relative; 
+      border: 1px solid var(--border-color); 
+      overflow: hidden; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: space-between;
+      box-shadow: var(--shadow);
+    }
+    
+    .card-top { 
+      width: 100%; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center;
+      text-align: center;
+    }
+    
+    .logo { 
+      width: 160px; 
+      height: auto; 
+      filter: drop-shadow(0 6px 18px rgba(0,0,0,0.25)); 
+      margin-top: 6px;
+    }
+    
+    .title { 
+      font-family: Pacifico, cursive; 
+      font-size: 56px; 
+      letter-spacing: 1px; 
+      margin: 18px 0 6px; 
+      color: white; 
+      text-shadow: 0 6px 24px rgba(0,0,0,0.35);
+    }
+    
+    .subtitle { 
+      font-size: 14px; 
+      opacity: 0.95; 
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    
+    .message-box { 
+      width: 92%; 
+      background: var(--card-bg); 
+      padding: 20px; 
+      border-radius: 14px; 
+      border: 1px solid var(--border-color); 
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      text-align: center;
+    }
+    
+    .message-text { 
+      font-size: 18px; 
+      line-height: 1.4; 
+      color: white;
+      font-weight: 500;
+    }
+    
+    .verses { 
+      width: 92%; 
+      margin-bottom: 8px; 
+      padding: 14px; 
+      border-radius: 12px; 
+      background: rgba(0,0,0,0.25); 
+      font-size: 13px; 
+      color: #f1f5f9;
+    }
+    
+    .footer { 
+      width: 100%; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      padding-bottom: 8px;
+    }
+    
+    .share-row { 
+      display: flex; 
+      gap: 8px; 
+      flex-wrap: wrap; 
+      margin-top: 16px;
+    }
+    
+    .status { 
+      margin-top: 12px; 
+      padding: 8px 12px; 
+      border-radius: 8px; 
+      background: rgba(255,255,255,0.05);
+      font-size: 12px;
+    }
+    
+    .status.success { background: rgba(76, 175, 80, 0.2); }
+    .status.error { background: rgba(244, 67, 54, 0.2); }
+    .status.loading { background: rgba(33, 150, 243, 0.2); }
+    
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .card-preview { height: 420px; padding: 20px; }
+      .title { font-size: 42px; }
+    }
+    
+    @media (max-width: 480px) {
+      body { padding: 16px; }
+      .panel { padding: 16px; }
+      .card-preview { height: 380px; padding: 16px; }
+      .title { font-size: 36px; }
+      .message-text { font-size: 16px; }
+      .btn { padding: 8px 12px; font-size: 12px; }
+    }
+    
+    /* Loading animation */
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="panel">
+      <h1>Generador Juvenil — Tarjeta ULTRA</h1>
+      <div class="small">Personaliza la tarjeta, comparte el link o descarga la imagen con el logo ULTRA.</div>
+
+      <label for="name">Nombre (ej. Juan)</label>
+      <input id="name" type="text" placeholder="Ej. Juan" />
+
+      <label for="message">Mensaje principal</label>
+      <textarea id="message" placeholder="Cristo te ama y tiene un propósito para ti"></textarea>
+
+      <label for="versePreset">Versículos (elige uno o agrega los tuyos)</label>
+      <select id="versePreset">
+        <option value="">-- Seleccionar versículo --</option>
+        <option value="Filipenses 4:13 - Todo lo puedo en Cristo que me fortalece.">Filipenses 4:13</option>
+        <option value="Jeremías 29:11 - Porque yo sé los planes que tengo para vosotros...">Jeremías 29:11</option>
+        <option value="Salmo 23:1 - El Señor es mi pastor; nada me faltará.">Salmo 23:1</option>
+        <option value="Romanos 8:28 - Todas las cosas ayudan a bien...">Romanos 8:28</option>
+        <option value="Proverbios 3:5-6 - Confía en el Señor con todo tu corazón...">Proverbios 3:5-6</option>
+        <option value="Mateo 11:28 - Venid a mí todos los que estáis trabajados y cargados...">Mateo 11:28</option>
+        <option value="Juan 3:16 - Porque de tal manera amó Dios al mundo...">Juan 3:16</option>
+        <option value="Isaías 40:31 - Los que esperan en el Señor renovarán sus fuerzas...">Isaías 40:31</option>
+      </select>
+
+      <div class="row">
+        <input id="customVerse" type="text" placeholder="Agregar versículo personalizado (ej. Juan 3:16 - Porque de tal...)" />
+        <button class="btn" id="addVerseBtn">Añadir</button>
+      </div>
+
+      <div class="verses-list" id="versesList"></div>
+
+      <div style="margin-top: 16px">
+        <button class="btn" id="updatePreview">Actualizar vista</button>
+        <button class="btn ghost" id="generateLink">Generar link</button>
+        <button class="btn ghost" id="copyText">Copiar texto</button>
+        <button class="btn" id="downloadPng">Descargar imagen</button>
+      </div>
+
+      <div class="share-row">
+        <button class="btn ghost" id="shareWhatsapp">WhatsApp</button>
+        <button class="btn ghost" id="shareTwitter">Twitter</button>
+        <button class="btn ghost" id="shareFacebook">Facebook</button>
+        <button class="btn ghost" id="shareNative" style="display:none">Compartir</button>
+      </div>
+
+      <div style="margin-top: 16px">
+        <label for="shareText">Texto de vista previa para compartir</label>
+        <textarea id="shareText" readonly></textarea>
+      </div>
+
+      <div id="status" class="status">Estado: listo.</div>
+    </div>
+
+    <div class="panel preview-wrap">
+      <div class="card-preview" id="cardPreview">
+        <div class="card-top">
+          <div class="subtitle">FAMILIA</div>
+          <div class="title" id="previewTitle">GRUPO 2</div>
+          <div class="subtitle" id="previewName">Para: Amigo</div>
+        </div>
+
+        <div class="message-box">
+          <div class="message-text" id="previewMessage">Cristo te ama y tiene un propósito para ti</div>
+        </div>
+
+        <div class="verses" id="previewVerses">
+          <div class="small">Versículos:</div>
+          <div id="previewVersesList"></div>
+        </div>
+
+        <div class="footer">
+          <!-- SVG logo estilo triángulo ULTRA -->
+          <svg class="logo" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" fill="white">
+            <polygon points="60,10 110,90 10,90" stroke="white" stroke-width="4" fill="none"/>
+            <text x="60" y="75" text-anchor="middle" font-size="24" font-family="Montserrat" fill="white" font-weight="700">ULTRA</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Utility functions
+    const qs = (id) => document.getElementById(id);
+    const escapeHtml = (s) => (s+'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    
+    // Data management
+    function getVerses() { 
+      try { 
+        return JSON.parse(localStorage.getItem('ultra_verses') || '[]'); 
+      } catch(e) { 
+        return []; 
+      } 
+    }
+    
+    function setVerses(verses) { 
+      localStorage.setItem('ultra_verses', JSON.stringify(verses)); 
+    }
+    
+    function setAppData(data) {
+      localStorage.setItem('ultra_app_data', JSON.stringify(data));
+    }
+    
+    function getAppData() {
+      try {
+        return JSON.parse(localStorage.getItem('ultra_app_data') || '{}');
+      } catch(e) {
+        return {};
+      }
+    }
+
+    // UI functions
+    function renderVerses() {
+      const container = qs('versesList');
+      const verses = getVerses();
+      
+      container.innerHTML = '';
+      
+      if (verses.length === 0) {
+        container.innerHTML = '<div class="small" style="text-align: center; padding: 20px;">No hay versículos añadidos</div>';
+        return;
+      }
+      
+      verses.forEach((verse, index) => {
+        const element = document.createElement('div');
+        element.className = 'verse-item';
+        element.innerHTML = `
+          <div style="flex: 1">${escapeHtml(verse)}</div>
+          <div style="margin-left: 8px">
+            <button class="btn ghost" data-index="${index}">Eliminar</button>
+          </div>
+        `;
+        container.appendChild(element);
+      });
+      
+      // Add event listeners to delete buttons
+      container.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', () => {
+          const index = parseInt(button.getAttribute('data-index'));
+          const verses = getVerses();
+          verses.splice(index, 1);
+          setVerses(verses);
+          renderVerses();
+          updatePreview();
+        });
+      });
+    }
+
+    function updatePreview() {
+      const name = qs('name').value.trim() || 'Amigo';
+      const message = qs('message').value.trim() || 'Cristo te ama y tiene un propósito para ti';
+      const verses = getVerses();
+      
+      // Update preview elements
+      qs('previewName').textContent = 'Para: ' + name;
+      qs('previewMessage').textContent = message;
+      
+      // Update verses list
+      const versesList = qs('previewVersesList');
+      versesList.innerHTML = '';
+      
+      if (verses.length === 0) {
+        versesList.innerHTML = '<div class="small">(Sin versículos añadidos)</div>';
+      } else {
+        verses.forEach(verse => {
+          const verseElement = document.createElement('div');
+          verseElement.style.marginBottom = '6px';
+          verseElement.textContent = verse;
+          versesList.appendChild(verseElement);
+        });
+      }
+      
+      // Update share text
+      const shareLines = [
+        'Para: ' + name,
+        '',
+        message,
+        ''
+      ];
+      
+      if (verses.length > 0) {
+        shareLines.push('Versículos:');
+        verses.forEach(verse => shareLines.push('- ' + verse));
+        shareLines.push('');
+      }
+      
+      shareLines.push('Te comparto esto con cariño.');
+      qs('shareText').value = shareLines.join('\n');
+      
+      // Save current state
+      setAppData({
+        name: qs('name').value,
+        message: qs('message').value,
+        lastUpdated: new Date().toISOString()
+      });
+    }
+
+    function loadFromUrl() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const dataParam = params.get('data');
+        
+        if (!dataParam) return;
+        
+        const decoded = decodeURIComponent(atob(dataParam));
+        const data = JSON.parse(decoded);
+        
+        if (data.name) qs('name').value = data.name;
+        if (data.message) qs('message').value = data.message;
+        if (data.verses) setVerses(data.verses);
+        
+        renderVerses();
+        updatePreview();
+        showStatus('Datos cargados desde el enlace.', 'success');
+      } catch(e) {
+        console.warn('Error loading from URL:', e);
+      }
+    }
+
+    function generateLink() {
+      const payload = {
+        name: qs('name').value,
+        message: qs('message').value,
+        verses: getVerses(),
+        version: '1.1'
+      };
+      
+      const encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
+      return window.location.origin + window.location.pathname + '?data=' + encoded;
+    }
+
+    function showStatus(message, type = '') {
+      const status = qs('status');
+      status.textContent = message;
+      status.className = 'status';
+      
+      if (type) {
+        status.classList.add(type);
+      }
+      
+      // Auto-clear success messages after 3 seconds
+      if (type === 'success') {
+        setTimeout(() => {
+          if (status.textContent === message) {
+            status.textContent = 'Listo.';
+            status.className = 'status';
+          }
+        }, 3000);
+      }
+    }
+
+    // html2canvas loading and image generation
+    const HTML2CANVAS_SOURCES = [
+      'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+      'https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+    ];
+
+    function loadScript(url, timeout = 15000) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = url;
+        script.async = true;
+        script.crossOrigin = 'anonymous';
+        
+        let loaded = false;
+        
+        script.onload = () => {
+          if (loaded) return;
+          loaded = true;
+          resolve(url);
+        };
+        
+        script.onerror = (error) => {
+          if (loaded) return;
+          loaded = true;
+          reject(error);
+        };
+        
+        document.head.appendChild(script);
+        
+        setTimeout(() => {
+          if (loaded) return;
+          loaded = true;
+          reject(new Error(`Timeout loading script: ${url}`));
+        }, timeout);
+      });
+    }
+
+    async function ensureHtml2canvas() {
+      if (window.html2canvas) {
+        return window.html2canvas;
+      }
+      
+      showStatus('Cargando html2canvas...', 'loading');
+      
+      for (const source of HTML2CANVAS_SOURCES) {
+        try {
+          await loadScript(source);
+          if (window.html2canvas) {
+            showStatus('html2canvas cargado correctamente.', 'success');
+            return window.html2canvas;
+          }
+        } catch (error) {
+          console.warn(`Failed to load from ${source}:`, error);
+        }
+      }
+      
+      throw new Error('No se pudo cargar html2canvas desde ninguna fuente.');
+    }
+
+    async function downloadImage() {
+      const downloadBtn = qs('downloadPng');
+      const originalText = downloadBtn.innerHTML;
+      
+      try {
+        // Show loading state
+        downloadBtn.innerHTML = '<span class="loading"></span> Generando...';
+        downloadBtn.disabled = true;
+        
+        showStatus('Preparando exportación...', 'loading');
+        
+        const html2canvas = await ensureHtml2canvas();
+        
+        showStatus('Generando imagen...', 'loading');
+        
+        const canvas = await html2canvas(qs('cardPreview'), {
+          scale: 2,
+          backgroundColor: null,
+          useCORS: true,
+          logging: false
+        });
+        
+        canvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `tarjeta_ultra_${Date.now()}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          
+          showStatus('Imagen descargada correctamente.', 'success');
+        }, 'image/png', 0.95);
+        
+      } catch (error) {
+        console.error('Error generating image:', error);
+        showStatus('Error al generar la imagen: ' + error.message, 'error');
+      } finally {
+        // Restore button state
+        downloadBtn.innerHTML = originalText;
+        downloadBtn.disabled = false;
+      }
+    }
+
+    // Initialize application
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize data if not exists
+      if (!localStorage.getItem('ultra_verses')) {
+        setVerses([]);
+      }
+      
+      // Load saved data
+      const appData = getAppData();
+      if (appData.name) qs('name').value = appData.name;
+      if (appData.message) qs('message').value = appData.message;
+      
+      // Render initial state
+      renderVerses();
+      loadFromUrl();
+      updatePreview();
+      
+      // Event listeners
+      qs('addVerseBtn').addEventListener('click', () => {
+        const presetVerse = qs('versePreset').value;
+        const customVerse = qs('customVerse').value.trim();
+        const verses = getVerses();
+        
+        if (presetVerse) {
+          verses.push(presetVerse);
+        }
+        
+        if (customVerse) {
+          verses.push(customVerse);
+        }
+        
+        setVerses(verses);
+        renderVerses();
+        qs('customVerse').value = '';
+        qs('versePreset').value = '';
+        updatePreview();
+        
+        if (presetVerse || customVerse) {
+          showStatus('Versículo añadido.', 'success');
+        }
+      });
+      
+      qs('updatePreview').addEventListener('click', () => {
+        updatePreview();
+        showStatus('Vista previa actualizada.', 'success');
+      });
+      
+      qs('generateLink').addEventListener('click', () => {
+        const link = generateLink();
+        const shareText = qs('shareText');
+        shareText.value = shareText.value + '\n\nLink: ' + link;
+        
+        navigator.clipboard.writeText(link).then(() => {
+          showStatus('Enlace copiado al portapapeles.', 'success');
+        }).catch(() => {
+          // Fallback for browsers that don't support clipboard API
+          shareText.select();
+          document.execCommand('copy');
+          showStatus('Enlace seleccionado, copia manualmente (Ctrl+C).', 'success');
+        });
+      });
+      
+      qs('copyText').addEventListener('click', () => {
+        const shareText = qs('shareText');
+        
+        navigator.clipboard.writeText(shareText.value).then(() => {
+          showStatus('Texto copiado al portapapeles.', 'success');
+        }).catch(() => {
+          // Fallback
+          shareText.select();
+          document.execCommand('copy');
+          showStatus('Texto seleccionado, copia manualmente (Ctrl+C).', 'success');
+        });
+      });
+      
+      // Social sharing
+      qs('shareWhatsapp').addEventListener('click', () => {
+        const text = encodeURIComponent(qs('shareText').value + '\n' + generateLink());
+        window.open('https://wa.me/?text=' + text, '_blank');
+      });
+      
+      qs('shareTwitter').addEventListener('click', () => {
+        const text = encodeURIComponent(qs('shareText').value);
+        const url = encodeURIComponent(generateLink());
+        window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + url, '_blank');
+      });
+      
+      qs('shareFacebook').addEventListener('click', () => {
+        const url = encodeURIComponent(generateLink());
+        window.open('https://www.facebook.com/sharer/sharer.php?u=' + url, '_blank');
+      });
+      
+      // Native sharing
+      const nativeShareBtn = qs('shareNative');
+      if (navigator.share) {
+        nativeShareBtn.style.display = 'inline-block';
+        nativeShareBtn.addEventListener('click', () => {
+          navigator.share({
+            title: 'Tarjeta ULTRA',
+            text: qs('shareText').value,
+            url: generateLink()
+          }).catch(error => {
+            console.log('Share cancelled:', error);
+          });
+        });
+      }
+      
+      // Image download
+      qs('downloadPng').addEventListener('click', downloadImage);
+      
+      // Auto-update preview on input changes
+      qs('name').addEventListener('input', updatePreview);
+      qs('message').addEventListener('input', updatePreview);
+      
+      // Add verse on Enter key in custom verse field
+      qs('customVerse').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          qs('addVerseBtn').click();
+        }
+      });
+      
+      // Preload html2canvas in background
+      ensureHtml2canvas().catch(() => {
+        // Silent fail - will try again when download is clicked
+      });
+      
+      showStatus('Aplicación cargada correctamente.', 'success');
+    });
+  </script>
+</body>
+</html>
+"""
+
+# Create Instagram post HTML (1080x1080)
+insta_html = index_html.replace(
+    'card-preview{width:100%;height:520px', 
+    'card-preview{width:1080px;height:1080px'
+).replace(
+    "body{background:linear-gradient(135deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;padding:24px;color:var(--accent)}",
+    "body{background:linear-gradient(135deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;padding:0;color:var(--accent);min-height:100vh}"
+).replace(
+    "<title>", 
+    "<title>Tarjeta ULTRA - Post Instagram</title>\n  <meta name=\"description\" content=\"Tarjeta ULTRA optimizada para Instagram Post (1080x1080)\" />"
+)
+
+# Create Story HTML (1080x1920)
+story_html = index_html.replace(
+    'card-preview{width:100%;height:520px', 
+    'card-preview{width:1080px;height:1920px'
+).replace(
+    "body{background:linear-gradient(135deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;padding:24px;color:var(--accent)}",
+    "body{background:linear-gradient(135deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;padding:0;color:var(--accent);min-height:100vh}"
+).replace(
+    ".title { font-family: Pacifico, cursive; font-size: 56px;",
+    ".title { font-family: Pacifico, cursive; font-size: 72px;"
+).replace(
+    ".message-text { font-size: 18px;",
+    ".message-text { font-size: 24px;"
+).replace(
+    "<title>", 
+    "<title>Tarjeta ULTRA - Story Instagram</title>\n  <meta name=\"description\" content=\"Tarjeta ULTRA optimizada para Instagram Story (1080x1920)\" />"
+)
+
+# Enhanced README with better formatting
+current_date = datetime.now().strftime("%Y-%m-%d")
+readme = textwrap.dedent(f"""\
+    =============================================
+    PAQUETE TARJETA ULTRA - v{VERSION}
+    Fecha: {current_date}
+    =============================================
+
+    DESCRIPCIÓN:
+    ------------
+    Paquete completo para generar y compartir tarjetas inspiradoras ULTRA.
+    Incluye versión web interactiva y versiones optimizadas para redes sociales.
+
+    ARCHIVOS INCLUIDOS:
+    -------------------
+    - index.html    -> Versión web principal (responsive, interactiva)
+    - insta.html    -> Optimizado para Post Instagram (1080x1080 píxeles)
+    - story.html    -> Optimizado para Story Instagram (1080x1920 píxeles)
+    - README.txt    -> Este archivo de instrucciones
+
+    CARACTERÍSTICAS MEJORADAS:
+    --------------------------
+    ✓ Interfaz moderna con efectos visuales
+    ✓ Diseño completamente responsive
+    ✓ Guardado automático del progreso
+    ✓ Mejor manejo de errores
+    ✓ Estados de carga y retroalimentación
+    ✓ Compartición nativa en dispositivos móviles
+    ✓ Múltiples fuentes para html2canvas
+    ✓ Accesibilidad mejorada
+
+    INSTRUCCIONES DE USO:
+    ---------------------
+
+    1. DESCOMPRIMIR:
+       - Extrae todos los archivos en una carpeta de tu equipo
+
+    2. USO BÁSICO:
+       - Abre 'index.html' en cualquier navegador moderno
+       - Personaliza el nombre, mensaje y versículos
+       - La vista previa se actualiza automáticamente
+       - Usa los botones de la barra de herramientas para las acciones
+
+    3. COMPARTIR:
+       - WHATSAPP: Comparte texto + enlace personalizado
+       - TWITTER/FACEBOOK: Publica directamente en estas redes
+       - COMPARTIR NATIVO: En móviles, usa el botón del sistema
+       - COPIAR TEXTO: Copia el texto formateado al portapapeles
+       - GENERAR LINK: Crea un enlace personalizado con tus datos
+
+    4. DESCARGAR IMAGEN:
+       - Haz clic en "Descargar imagen" para generar un PNG
+       - La página cargará automáticamente html2canvas
+       - Para Instagram: usa insta.html (post) o story.html (story)
+
+    5. PARA REDES SOCIALES:
+       - POST INSTAGRAM: Abre insta.html y descarga la imagen
+       - STORY INSTAGRAM: Abre story.html y descarga la imagen
+
+    CONFIGURACIÓN AVANZADA:
+    -----------------------
+
+    - Los datos se guardan automáticamente en el navegador
+    - Los enlaces personalizados contienen toda la información
+    - Puedes agregar versículos personalizados además de los predefinidos
+
+    COMPATIBILIDAD:
+    ---------------
+    ✔ Chrome 60+    ✔ Firefox 55+    ✔ Safari 12+    ✔ Edge 79+
+
+    REQUISITOS:
+    -----------
+    - Navegador moderno con JavaScript habilitado
+    - Conexión a Internet (para fuentes Google y html2canvas)
+    - Almacenamiento local del navegador activado
+
+    SOLUCIÓN DE PROBLEMAS:
+    ----------------------
+
+    • Si la descarga de imagen falla:
+      - Verifica tu conexión a Internet
+      - Intenta en un navegador diferente
+      - Asegúrate de que no hay bloqueadores de scripts
+
+    • Si los datos no se guardan:
+      - Verifica que las cookies estén habilitadas
+      - Intenta en modo incógnito/navegación privada
+
+    • Para mejor calidad de imagen:
+      - Usa las versiones específicas (insta.html, story.html)
+      - Espera a que se complete la generación
+
+    CONTACTO Y SOPORTE:
+    -------------------
+    Para problemas técnicos o personalizaciones adicionales,
+    contacta al desarrollador.
+
+    =============================================
+    ¡Disfruta creando y compartiendo tarjetas ULTRA!
+    =============================================
+    """)
+
+# Create package.json for version tracking
+package_info = {
+    "name": "tarjeta-ultra-generator",
+    "version": VERSION,
+    "description": "Generador de tarjetas inspiradoras ULTRA para grupos juveniles",
+    "main": "index.html",
+    "author": "ULTRA Grupo Juvenil",
+    "created": current_date,
+    "files": ["index.html", "insta.html", "story.html", "README.txt"]
+}
+
+# Write all files
+files = {
+    "index.html": index_html,
+    "insta.html": insta_html,
+    "story.html": story_html,
+    "README.txt": readme,
+    "package.json": json.dumps(package_info, indent=2, ensure_ascii=False)
+}
+
+print(f"Creando paquete en: {OUT_DIR}")
+for name, content in files.items():
+    path = os.path.join(OUT_DIR, name)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
+    print(f"✓ Creado: {name}")
+
+# Create ZIP archive
+zip_filename = f"{PACKAGE_NAME}_v{VERSION}.zip"
+zip_path = os.path.join("/mnt/data", zip_filename)
+
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+    for root, _, files in os.walk(OUT_DIR):
+        for file in files:
+            file_path = os.path.join(root, file)
+            arcname = os.path.relpath(file_path, OUT_DIR)
+            zipf.write(file_path, arcname)
+
+print(f"✓ Paquete ZIP creado: {zip_filename}")
+print(f"✓ Total archivos: {len(files)}")
+print(f"✓ Versión: {VERSION}")
+print("¡Paquete completado exitosamente!")
